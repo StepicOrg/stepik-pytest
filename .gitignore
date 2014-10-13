@@ -1,0 +1,11 @@
+*.pyc
+
+# Packages
+*.egg-info
+dist
+build
+
+# Unit test
+.cache
+
+.idea
