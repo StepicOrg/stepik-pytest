@@ -101,10 +101,6 @@ class MalReporter(object):
             error_message = "Wrong answer"
         elif isinstance(exc, AssertionError):
             error_message = exc.message
-        print(node, dir(node))
-        print(call)
-        print(report)
-        print('-------------------')
         # TODO: INTERNALERROR>   File "/app/zoe/pytest_plugin.py", line 103, in pytest_exception_interact
         #       INTERNALERROR>     self._errors[node.id] = error_message
         #       INTERNALERROR> AttributeError: 'Module' object has no attribute 'id'
