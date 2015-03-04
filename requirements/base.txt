@@ -1,2 +1,5 @@
 pytest==2.6.4
 cuisine==0.7.1
+
+# requirements used in test scenarios
+requests==2.5.3
