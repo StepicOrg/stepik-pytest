@@ -3,74 +3,76 @@ import mock
 import pytest
 
 from collections import OrderedDict
+from io import StringIO
 
-from stepic_pytest.malclient import CheckerJobStatus, CheckerJobResult
-from stepic_pytest.plugin import MalReporter
+from stepic_pytest.plugin import ZoeReporter
 
 
-class TestMalReporter(object):
+class TestZoeReporter(object):
     @pytest.fixture
     def config(self):
-        config_mock = mock.MagicMock()
-        config_mock.option.mal_job_id = 123
-        config_mock.option.mal_api_url = 'http://example.com/api'
-        config_mock.option.mal_username = 'checker_username'
-        config_mock.option.mal_password = 'checker_password'
-        return config_mock
+        config = mock.MagicMock()
+        config.option.zoe_report = True
+        return config
 
     @pytest.fixture
     def reporter(self, config):
-        return MalReporter(config)
+        output = StringIO()
+        return ZoeReporter(config, output=output)
 
     def test_pytest_sessionfinish(self, reporter):
         assert not hasattr(reporter, '_exitstatus')
         reporter.pytest_sessionfinish(0)
-        assert reporter._result == CheckerJobResult.PASSED
+        assert reporter._result == reporter.RESULT_PASSED
         reporter.pytest_sessionfinish(1)
-        assert reporter._result == CheckerJobResult.FAILED
+        assert reporter._result == reporter.RESULT_FAILED
 
     def test_pytest_unconfigure(self, reporter, config):
-        reporter._result = CheckerJobResult.PASSED
-        log = u'test1 PASSED\ntest2 PASSED\ntest3 FAILED'
-        reporter._log_file.write(log)
+        reporter._result = reporter.RESULT_PASSED
         with mock.patch.object(reporter, 'report_result') as report_result:
+            config.option.zoe_report = False
             reporter.pytest_unconfigure(config)
-            report_result.assert_called_once_with(CheckerJobResult.PASSED, log,
-                                                  reporter._errors)
+            assert not report_result.called
 
-    @mock.patch('stepic_pytest.malclient.requests')
-    def test_report_result_passed(self, mock_request, reporter):
-        reporter.report_result(CheckerJobResult.PASSED,
-                               '### pytest verbose log ###')
+            config.option.zoe_report = True
+            reporter.pytest_unconfigure(config)
+            report_result.assert_called_once_with(
+                reporter.RESULT_PASSED,
+                failed_tests=reporter._failed_tests,
+                error=reporter._error
+            )
 
-        mock_request.request.assert_called_once_with(
-            'patch',
-            'http://example.com/api/checker-jobs/123',
-            headers={'Content-Type': 'application/json'},
-            data=mock.ANY,
-            auth=('checker_username', 'checker_password'))
-        _, kwargs = mock_request.request.call_args
-        expected_data = {
-            'status': CheckerJobStatus.COMPLETED,
-            'result': CheckerJobResult.PASSED,
-            'log': '### pytest verbose log ###',
-        }
-        assert json.loads(kwargs['data']) == expected_data
+    def test_report_result_passed(self, reporter):
+        reporter.report_result(reporter.RESULT_PASSED)
 
-    @mock.patch('stepic_pytest.malclient.requests')
-    def test_report_result_failed(self, mock_request, reporter):
-        errors = OrderedDict()
-        errors[2] = "error message"
-        errors[10] = "other error message"
+        report_string = reporter.output.getvalue()
+        assert report_string.startswith(u'##rootnroll_zoe')
+        report = json.loads(report_string[len(u'##rootnroll_zoe'):])
+        assert report['result'] == reporter.RESULT_PASSED
 
-        reporter.report_result(CheckerJobResult.FAILED,
-                               '### pytest verbose log ###', errors)
+    def test_report_result_failed(self, reporter):
+        failed_tests = OrderedDict()
+        failed_tests[2] = "error message"
+        failed_tests[10] = "other error message"
 
-        _, kwargs = mock_request.request.call_args
-        expected_data = {
-            'status': CheckerJobStatus.COMPLETED,
-            'result': CheckerJobResult.FAILED,
-            'log': '### pytest verbose log ###',
-            'hint': "Test #2: error message",
-        }
-        assert json.loads(kwargs['data']) == expected_data
+        reporter.report_result(reporter.RESULT_FAILED,
+                               failed_tests=failed_tests)
+
+        report_string = reporter.output.getvalue()
+        assert report_string.startswith(u'##rootnroll_zoe')
+        report = json.loads(report_string[len(u'##rootnroll_zoe'):])
+        assert report['result'] == reporter.RESULT_FAILED
+        expected_failed_tests = [
+            {'number': 2, 'message': failed_tests[2]},
+            {'number': 10, 'message': failed_tests[10]},
+        ]
+        assert report['failed_tests'] == expected_failed_tests
+
+    def test_report_result_failed_with_error(self, reporter):
+        reporter.report_result(reporter.RESULT_FAILED, error="internal error")
+
+        report_string = reporter.output.getvalue()
+        assert report_string.startswith(u'##rootnroll_zoe')
+        report = json.loads(report_string[len(u'##rootnroll_zoe'):])
+        assert report['result'] == reporter.RESULT_FAILED
+        assert report['error'] == "internal error"
