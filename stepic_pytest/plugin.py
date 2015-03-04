@@ -40,6 +40,7 @@ def pytest_configure(config):
 
 
 class ZoeReporter(object):
+    REPORT_PREFIX = u'\n##rootnroll_zoe'
     RESULT_PASSED = 'passed'
     RESULT_FAILED = 'failed'
 
@@ -97,5 +98,6 @@ class ZoeReporter(object):
                 test_info = dict(number=number, message=message)
                 report['failed_tests'].append(test_info)
 
-        self.output.write(u'##rootnroll_zoe')
+        self.output.write(self.REPORT_PREFIX)
         self.output.write(json.dumps(report).decode('utf8'))
+        self.output.write(u'\n')

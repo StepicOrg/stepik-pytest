@@ -8,6 +8,9 @@ from io import StringIO
 from stepic_pytest.plugin import ZoeReporter
 
 
+ZOE_REPORT_PREFIX = u'\n##rootnroll_zoe'
+
+
 class TestZoeReporter(object):
     @pytest.fixture
     def config(self):
@@ -46,8 +49,9 @@ class TestZoeReporter(object):
         reporter.report_result(reporter.RESULT_PASSED)
 
         report_string = reporter.output.getvalue()
-        assert report_string.startswith(u'##rootnroll_zoe')
-        report = json.loads(report_string[len(u'##rootnroll_zoe'):])
+        assert report_string.startswith(ZOE_REPORT_PREFIX)
+        assert report_string.endswith(u'\n')
+        report = json.loads(report_string[len(ZOE_REPORT_PREFIX):])
         assert report['result'] == reporter.RESULT_PASSED
 
     def test_report_result_failed(self, reporter):
@@ -59,8 +63,9 @@ class TestZoeReporter(object):
                                failed_tests=failed_tests)
 
         report_string = reporter.output.getvalue()
-        assert report_string.startswith(u'##rootnroll_zoe')
-        report = json.loads(report_string[len(u'##rootnroll_zoe'):])
+        assert report_string.startswith(ZOE_REPORT_PREFIX)
+        assert report_string.endswith(u'\n')
+        report = json.loads(report_string[len(ZOE_REPORT_PREFIX):])
         assert report['result'] == reporter.RESULT_FAILED
         expected_failed_tests = [
             {'number': 2, 'message': failed_tests[2]},
@@ -72,7 +77,8 @@ class TestZoeReporter(object):
         reporter.report_result(reporter.RESULT_FAILED, error="internal error")
 
         report_string = reporter.output.getvalue()
-        assert report_string.startswith(u'##rootnroll_zoe')
-        report = json.loads(report_string[len(u'##rootnroll_zoe'):])
+        assert report_string.startswith(ZOE_REPORT_PREFIX)
+        assert report_string.endswith(u'\n')
+        report = json.loads(report_string[len(ZOE_REPORT_PREFIX):])
         assert report['result'] == reporter.RESULT_FAILED
         assert report['error'] == "internal error"
