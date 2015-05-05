@@ -2,6 +2,7 @@ import os
 
 import stepic_pytest
 
+from pip.download import PipSession
 from pip.req import parse_requirements
 from setuptools import setup
 
@@ -11,7 +12,7 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-requirements_base = parse_requirements('requirements/base.txt')
+requirements_base = parse_requirements('requirements/base.txt', session=PipSession())
 install_requires = [str(req.req) for req in requirements_base]
 
 setup(
