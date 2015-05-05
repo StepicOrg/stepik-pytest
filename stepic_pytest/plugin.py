@@ -66,7 +66,7 @@ class ZoeReporter(object):
             self._error = "Test scenario contains errors"
             return
         exc = call.excinfo.value
-        error_message = "Incorrect configuration"
+        error_message = "Unknown error"
         if isinstance(exc, AbortError):
             if "Network is unreachable" in exc.message:
                 error_message = "Network is unreachable"
@@ -79,7 +79,7 @@ class ZoeReporter(object):
         elif isinstance(exc, WrongAnswer):
             error_message = "Wrong answer"
         elif isinstance(exc, AssertionError):
-            error_message = exc.message if exc.message else ""
+            error_message = exc.message if exc.message else "Assertion error"
         self._failed_tests[node.number] = error_message
 
     def pytest_unconfigure(self, config):
