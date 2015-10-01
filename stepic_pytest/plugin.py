@@ -66,7 +66,7 @@ class ZoeReporter(object):
             self._error = "Test scenario contains errors"
             return
         exc = call.excinfo.value
-        error_message = "Unknown error"
+        error_message = "Unknown error: {0}".format(exc)
         if isinstance(exc, AbortError):
             if "Network is unreachable" in exc.message:
                 error_message = "Network is unreachable"
