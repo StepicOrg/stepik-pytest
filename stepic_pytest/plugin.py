@@ -63,7 +63,8 @@ class ZoeReporter(object):
 
     def pytest_exception_interact(self, node, call, report):
         if isinstance(node, Module):
-            self._error = "Test scenario contains errors"
+            self._error = ("Test scenario code contains errors: {0}"
+                           .format(call.excinfo.value))
             return
         exc = call.excinfo.value
         error_message = "Unknown error: {0}".format(exc)
