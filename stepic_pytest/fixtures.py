@@ -2,6 +2,8 @@ import logging
 
 import cuisine
 import pytest
+import subprocess
+import os
 
 from functools import wraps
 
@@ -41,10 +43,40 @@ class Server(object):
         return func
 
 
+class Localhost(object):
+
+    class Str(str):
+        pass
+
+    def __init__(self):
+        self.ip = '127.0.0.1'
+        self.cwd = os.environ.get('HOME')
+
+    def __getattr__(self, func):
+        raise AttributeError(func + ' is not available for localhost')
+
+    def run(self, cmd):
+        out = ''
+        succeeded = False
+        try:
+            out = subprocess.check_output(cmd, cwd=self.cwd, shell=True)
+            succeeded = True
+        except subprocess.CalledProcessError:
+            pass
+        res = self.Str(out)
+        res.succeeded = succeeded
+        return res
+
+
+
 @pytest.fixture(scope='session')
 def s(request):
     """Server to be checked."""
-    env.user = 'root'
-    env.key_filename = request.config.getoption('ssh_key_path')
-    request.addfinalizer(disconnect_all)
-    return Server(request.config.getoption('server_ip'))
+    ip = request.config.getoption('server_ip')
+    if ip in ('127.0.0.1', 'localhost'):
+        return Localhost()
+    else:
+        env.user = 'root'
+        env.key_filename = request.config.getoption('ssh_key_path')
+        request.addfinalizer(disconnect_all)
+        return Server(ip)
