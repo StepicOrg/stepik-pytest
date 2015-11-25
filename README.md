@@ -10,7 +10,11 @@ pip install https://github.com/StepicOrg/stepic-pytest/archive/master.zip
 ```
 
 ## Usage
-Run a test scenario for the remote server `HOSTNAME` using SSH key `~/.ssh/id_rsa`, the test scenario is located in the file `test_scenario.py`:
+Run a test scenario that checks `localhost`, the test scenario is located in the file `test_scenario.py`:
+```bash
+py.test -s -z --assert plain --server localhost --ssh-key local test_scenario.py
+```
+Or run a test scenario that checks a remote server `HOSTNAME` using SSH key `~/.ssh/id_rsa`:
 ```bash
 py.test -s -z --assert plain --server HOSTNAME --ssh-key ~/.ssh/id_rsa test_scenario.py
 ```
