@@ -96,6 +96,7 @@ class ZoeReporter(object):
         elif failed_tests:
             report['failed_tests'] = []
             for number, message in failed_tests.iteritems():
+                message = message.decode('utf8', error='replace').encode('utf8')
                 test_info = dict(number=number, message=message)
                 report['failed_tests'].append(test_info)
 
