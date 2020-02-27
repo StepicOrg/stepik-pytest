@@ -1,11 +1,21 @@
 import os
 
+import pip
+
 import stepic_pytest
 
-from pip.download import PipSession
-from pip.req import parse_requirements
-from setuptools import setup
+pip_major_version = int(pip.__version__.split(".")[0])
+if pip_major_version >= 20:
+    from pip._internal.req import parse_requirements
+    from pip._internal.network.session import PipSession
+elif pip_major_version >= 10:
+    from pip._internal.req import parse_requirements
+    from pip._internal.download import PipSession
+else:
+    from pip.req import parse_requirements
+    from pip.download import PipSession
 
+from setuptools import setup
 
 README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 
