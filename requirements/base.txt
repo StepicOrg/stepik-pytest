@@ -8,4 +8,4 @@ fabric==1.10.2  # cuisine
 cuisine==0.7.1
 
 # requirements used in test scenarios
-requests==2.5.3
+requests==2.20.0
