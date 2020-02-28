@@ -1,5 +1,11 @@
+py==1.4.30  # pytest
 pytest==2.6.4
+
+ecdsa==0.13  # paramiko, fabric, cuisine
+pycrypto==2.6.1  # paramiko, fabric, cuisine
+paramiko==1.16.0  # fabric, cuisine
+fabric==1.10.2  # cuisine
 cuisine==0.7.1
 
 # requirements used in test scenarios
-requests==2.20.1
+requests==2.5.3
