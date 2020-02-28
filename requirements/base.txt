@@ -1,7 +1,7 @@
 py==1.4.30  # pytest
 pytest==2.6.4
 
-ecdsa==0.13  # paramiko, fabric, cuisine
+ecdsa==0.13.3  # paramiko, fabric, cuisine
 pycrypto==2.6.1  # paramiko, fabric, cuisine
 paramiko==1.16.0  # fabric, cuisine
 fabric==1.10.2  # cuisine
