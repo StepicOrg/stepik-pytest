@@ -1,4 +1,4 @@
-py==1.4.30  # pytest
+py==1.10.0  # pytest
 pytest==2.6.4
 
 ecdsa==0.13  # paramiko, fabric, cuisine
